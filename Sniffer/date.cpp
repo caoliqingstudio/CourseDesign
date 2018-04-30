@@ -50,6 +50,8 @@ void Date::on_pushButton_clicked()
 //刷新table
 void Date::filterChangeTable(char *str){
     cout<<str<<"     ok \n"<<endl;
+    pcap->stopThread();//结束多线程
+    disconnect((pcap->thread),SIGNAL(packet_receive(Infor*)),this,SLOT(packetReceive(Infor*)));
     ui->tableWidget->clear();
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -64,8 +66,6 @@ void Date::filterChangeTable(char *str){
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableWidget->setHorizontalHeaderLabels(header);
 
-    pcap->stopThread();//结束多线程
-    disconnect((pcap->thread),SIGNAL(packet_receive(Infor*)),this,SLOT(packetReceive(Infor*)));
 
     table_i =0;
     for(int i=0;i<inforList.count();i++){
@@ -388,16 +388,20 @@ void Date::showData(Infor *infor){
     QStringList strlist;
     while(num<infor->length){
         if(infor->length - num < size){
+            QString str(QString::fromUtf8(reinterpret_cast<char *>(data),infor->length-num));
+            str.replace('\n',".");
             strlist.append(QString("%1    %2    %3")
                            .arg(num,4,10,QChar('0'))
                            .arg(QString(QByteArray::fromRawData((char *)data,infor->length-num).toHex()).toUpper(),size*2,QChar(' '))
-                           .arg(QString(QString::fromUtf8(reinterpret_cast<char *>(data),infor->length-num))));
+                           .arg(str));
             break;
         }
+        QString str(QString::fromUtf8(reinterpret_cast<char *>(data),size));
+        str.replace('\n',".");
         strlist.append(QString("%1    %2    %3")
                        .arg(num,4,10,QChar('0'))
                        .arg(QString(QByteArray::fromRawData((char *)data,size).toHex()).toUpper())
-                       .arg(QString::fromUtf8(reinterpret_cast<char *>(data),size)));
+                       .arg(str));
         data += size;
         num += size;
     }

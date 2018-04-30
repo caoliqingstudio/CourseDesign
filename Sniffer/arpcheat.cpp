@@ -33,7 +33,9 @@ void ArpCheat::on_pushButton_clicked()
 {
     QString wgipQs=ui->lineEdit->text();
     QString ipQs = ui->lineEdit_2->text();
-    char wgip[32],ip[32];
+    QString macQs = ui->lineEdit_3->text();
+    char wgip[32],ip[32],mac[60];
+    strcpy(mac,macQs.toStdString().c_str());
     strcpy(wgip,wgipQs.toStdString().c_str());
     strcpy(ip,ipQs.toStdString().c_str());
     quint16 op;
@@ -43,7 +45,7 @@ void ArpCheat::on_pushButton_clicked()
         op=ARP_OP_IP;
     }
     thread = new ThreadARP();
-    thread->init(pcap->indexDev,0,wgip,op,ip);
+    thread->init(pcap->indexDev,0,wgip,op,ip,mac);
     thread->start();
 
     Date * date = new Date();
@@ -57,7 +59,9 @@ void ArpCheat::on_checkBox_clicked()
 {
     if(ui->checkBox->isChecked()){
         ui->lineEdit_2->setEnabled(false);
+        ui->lineEdit_3->setEnabled(false);
     }else{
         ui->lineEdit_2->setEnabled(true);
+        ui->lineEdit_3->setEnabled(true);
     }
 }

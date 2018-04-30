@@ -13,13 +13,14 @@ class ThreadARP:public QThread
     Q_OBJECT
 public:
     ThreadARP();
-    void init(pcap_if_t *d, pcap_if_t *inalldevs,char *ip,int inop=ARP_OP_ALL,char *dip=0);
+    void init(pcap_if_t *d, pcap_if_t *inalldevs,char *ip,int inop=ARP_OP_ALL,char *dip=0,char *dmac=0);
 
 private:
 
     int op;
     char ipaddr[32];
     char dipaddr[32];
+    char dipmac[60];
 
     pcap_if_t *dev_if_t,*alldevs;
     virtual void run();
@@ -28,7 +29,7 @@ private:
         _In_ PCHAR AdapterName,
         _Out_ PUCHAR MacAddr);
 
-    void make_arp_packet(u_char* packet, u_char* src_mac, u_int src_ip, u_int dst_ip, quint16 op);
+    void make_arp_packet(u_char* packet, u_char* src_mac, u_int src_ip, u_int dst_ip, quint16 op,u_char *d_mac=0);
 
     inline unsigned short htons(unsigned short in){
         char * x =(char *)&in;
