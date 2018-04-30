@@ -19,6 +19,8 @@ Include和WpdPack文件夹为winpacp的文件，包括lib等。其中Include为WpdPack文件中的一
 
 arp欺骗是对网关及目的主机，使用广播地址进行欺骗。
 
+2018.4.30更新，添加了针对制定mac及ip的欺骗
+
 ### 包存储
 
 包存储使用了结构体顺序存储
